@@ -114,8 +114,8 @@ type decoder struct {
 	progressive   bool
 	jpegColorSpace int
 	eobRun        uint16 // End-of-Band run, specified in section G.1.2.2.
-	comp          [MAX_COMPS_IN_SCAN]component
-	progCoeffs    [MAX_COMPS_IN_SCAN][]block // Saved state between progressive-mode scans.
+	comp          []component
+	progCoeffs    [][]block // Saved state between progressive-mode scans.
 	huff          [maxTc + 1][maxTh + 1]huffman
 	quant         [maxTq + 1]block // Quantization tables, in zig-zag order.
 	iccProfile    [65535]byte
@@ -181,7 +181,8 @@ func (d *decoder) processSOF(n int) error {
 		default:
 			return UnsupportedError("Invalid number of components")
 	}
-
+	d.comp = make( []component, d.nComp )
+	d.progCoeffs = make( [][]block, d.nComp )
 	for i := 0; i < d.nComp; i++ {
 		d.comp[i].c = d.tmp[6+3*i]
 		d.comp[i].tq = d.tmp[8+3*i]
